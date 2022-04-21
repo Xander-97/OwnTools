@@ -2,11 +2,13 @@
 # coding:utf-8
 
 import os
+import sys
 import psutil
 import time
 import tkinter as tk
 from threading import Timer
 from PIL import Image, ImageTk
+
 
 PUBLIC_FONT = '"B612 Mono" 13 bold'
 WIDTH = 230
@@ -23,6 +25,26 @@ BACKGROUND = None
 Flag = True
 
 
+class Unit:
+    '''计量单位'''
+    Mbps: int = 0
+    Mbs: int = 1
+
+
+# default unit
+Mode: int = Unit.Mbps
+
+
+def modify(e):
+    '''switch units'''
+    global Mode
+    if Mode == Unit.Mbs:
+        Mode = Unit.Mbps
+    else:
+        Mode = Unit.Mbs
+    # print(Mode)
+
+
 def exit(e):
     ROOT.destroy()
 
@@ -32,9 +54,14 @@ def on_resize(e):
     create_rectangle(CANVAS)
 
 
-def set_content(sent, recv):
-    return ("\n\r上传: {}b/s".format("%.2f" % sent + 'K' if sent // 1000 == 0 else "%.2f" % (sent / 1000) + 'M'),
-            "\n\r下载: {}b/s".format("%.2f" % recv + 'K' if recv // 1000 == 0 else "%.2f" % (recv / 1000) + 'M'))
+def set_content_and_mode(sent, recv, mode: Unit):
+    sent /= 1024
+    recv /= 1024
+    if mode == Unit.Mbps:
+        return ("\n\r上传:{:.2f} Mbps".format(sent / 1000 * 8), "\n\r下载:{:.2f} Mbps".format(recv / 1000 * 8))
+    else:
+        return ("\n\r上传:{}b/s".format('%.2f K' % sent if sent // 1000 == 0 else '%.2f M' % (sent / 1000)),
+                "\n\r下载:{}b/s".format('%.2f K' % recv if recv // 1000 == 0 else '%.2f M' % (recv / 1000)))
 
 
 def get_time(localtime):
@@ -55,8 +82,9 @@ def main():
     # BACKGROUND = ImageTk.PhotoImage(Image.open(os.path.dirname(__file__) + os.sep + 'pkq1.png'))
     canvas.create_image(125, 125, anchor='center')  # image=BACKGROUND
     # create_rectangle(canvas)
-    # 设置透明窗口
-    root.wm_attributes('-transparentcolor', BASIC_COLOR)
+    if sys.platform == 'win32':
+        # 设置透明窗口
+        root.wm_attributes('-transparentcolor', BASIC_COLOR)
 
     return root, canvas
 
@@ -77,31 +105,31 @@ class NetworkSpeedGui():
 
     def get_net_speed(self):
         global Flag
-        
+
         # 时间获取应该在此处,不然就隔着运行2秒 初始化数值 clock
         self.canvas.itemconfigure('date', text=get_time(time.localtime()))
         if Flag:
-            sent, recv = set_content(self.sent_before / 1024, self.recv_before / 1024)
+            sent, recv = set_content_and_mode(self.sent_before, self.recv_before, Mode)
             self.canvas.itemconfigure('up', text=sent)
             self.canvas.itemconfigure('down', text=recv)
             Flag = False
-            
-        self.sent_before = psutil.net_io_counters().bytes_sent  # 已发送的流量
-        self.recv_before = psutil.net_io_counters().bytes_recv  # 已接收的流量
+
+        self.sent_before = psutil.net_io_counters().bytes_sent  # traffic sent
+        self.recv_before = psutil.net_io_counters().bytes_recv  # received traffic
 
         self.timer.cancel()
         self.timer = Timer(1, self.update)
         self.timer.start()
-        print('- - ' * 16)
-        print('get_net_speed:', self.sent_before, self.recv_before)
+        # print('- - ' * 16)
+        # print('get_net_speed:', self.sent_before, self.recv_before)
 
     def update(self):
         sent_now = psutil.net_io_counters().bytes_sent
         recv_now = psutil.net_io_counters().bytes_recv
-        sent = (sent_now - self.sent_before) / 1024  # 计算出1秒后的差值
-        recv = (recv_now - self.recv_before) / 1024
-        print('update:', sent_now, recv_now)
-        data = [get_time(time.localtime()), *set_content(sent, recv)]
+        sent = sent_now - self.sent_before
+        recv = recv_now - self.recv_before
+        # print('update:', sent_now, recv_now)
+        data = [get_time(time.localtime()), *set_content_and_mode(sent, recv, Mode)]
 
         self.canvas.itemconfigure('date', text=data[0])
         self.canvas.itemconfigure('up', text=data[1])
@@ -116,4 +144,5 @@ if __name__ == "__main__":
     NetworkSpeedGui(CANVAS, WIDTH, HEIGHT)
     # ROOT.bind('<Configure>', on_resize)
     ROOT.bind('<Double-Button-3>', exit)
+    ROOT.bind('<Double-Button-1>', modify)
     ROOT.mainloop()

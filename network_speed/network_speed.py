@@ -17,8 +17,8 @@ def get_net_speed():
     recv = (recv_now - recv_before) / 1024
 
     out += time.strftime(" [%Y-%m-%d %H:%M:%S] ", time.localtime())
-    out += "上传: {}b/s".format("%.2f" % sent + 'K' if sent // 1000 == 0 else "%.2f" % (sent/1000) + 'M')
-    out += "\t下载: {}b/s".format("%.2f" % recv + 'K' if recv // 1000 == 0 else "%.2f" % (recv/1000) + 'M')
+    out += "上传: {}b/s".format("%.2fK" % sent if sent // 1000 == 0 else "%.2fM" % (sent/1000))
+    out += "\t下载: {}b/s".format("%.2fK" % recv if recv // 1000 == 0 else "%.2fM" % (recv/1000))
 
     return out
 
