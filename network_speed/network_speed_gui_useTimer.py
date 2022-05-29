@@ -17,9 +17,9 @@ HEIGHT = 120
 # HEIGHT = 267
 BASIC_COLOR = 'gray'
 FONT_COLOR = "blue"
-ROOT = None
 CANVAS = None
 BACKGROUND = None
+Root = None
 
 # 初始化更新标志
 Flag = True
@@ -46,11 +46,15 @@ def modify(e):
 
 
 def exit(e):
-    ROOT.destroy()
+    Root.destroy()
+
+
+def move(e):
+    print('anixa', e.x, e.y, Root.winfo_x)
 
 
 def on_resize(e):
-    ROOT.configure(width=e.width, height=e.height)
+    Root.configure(width=e.width, height=e.height)
     create_rectangle(CANVAS)
 
 
@@ -140,9 +144,10 @@ class NetworkSpeedGui():
 
 
 if __name__ == "__main__":
-    ROOT, CANVAS = main()
+    Root, CANVAS = main()
     NetworkSpeedGui(CANVAS, WIDTH, HEIGHT)
     # ROOT.bind('<Configure>', on_resize)
-    ROOT.bind('<Double-Button-3>', exit)
-    ROOT.bind('<Double-Button-1>', modify)
-    ROOT.mainloop()
+    Root.bind('<Double-Button-3>', exit)
+    Root.bind('<Double-Button-1>', modify)
+    Root.bind('<Button-1>', move)
+    Root.mainloop()

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process</title>
+    <style>
+        #app {
+            width: 100%;
+            height: 100%;
+        }
+
+        .orgin {
+            position: absolute;
+            width: 400px;
+            height: 50px;
+            background-color: rgb(240, 232, 247);
+        }
+
+        .process {
+            position: absolute;
+            margin: 0 auto;
+            width: 400px;
+            height: 50px;
+            background-color: rgb(218, 96, 20);
+        }
+
+        .text {
+            position: relative;
+            float: right;
+            margin-right: -70px;
+            line-height: 50px;
+            font-size: 16px;
+            color: rgb(33, 48, 212);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="orgin"></div>
+        <div class="process">
+            <div class="text">进度 %</div>
+        </div>
+
+    </div>
+    <script>
+        let orgin = document.getElementsByClassName('orgin')[0]
+        let process = document.getElementsByClassName('process')[0]
+        let text = document.getElementsByClassName('text')[0]
+        let start = 0
+        let end = 400
+        let timer
+        timer = setInterval(() => {
+            if (start >= end) {
+                timer = false
+            }
+            else {
+                start += 1
+                process.style.width = `${start}px`
+                text.innerText = `进度 ${Math.floor(start / end * 100)}%`
+            }
+
+        }, 50)
+
+    </script>
+</body>
+
+</html>
